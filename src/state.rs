@@ -5,25 +5,33 @@ use cosmwasm_std::Addr;
 use cw_storage_plus::{Item, Map};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct State {
-    pub ticket_price: u32,
-    pub sold_ticket_count: u32,
-    pub total_ticket_count: u32,
-    pub expected_participants_count: u32,
+pub enum GameStatus {
+    Active,
+    Ended,
+    TimeOver,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct GlobalState {
+    pub count: u64,
+    pub owner: Addr
+}
+
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct GameState {
+    pub ticket_price: u64,
+    pub sold_ticket_count: u64,
+    pub total_ticket_count: u64,
     pub raffle_status: u8,
-    pub nft_contract_addr: Option<Addr>,
+    pub nft_contract_addr: Addr,
     pub nft_token_id: String,
-    pub count: u32,
     pub owner: Addr,
+    pub collection_wallet: Addr, // Collection wallet address to send tokens after the game finished
+    pub end_time: u64,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct TicketInfo {
-    pub wallet_address: Addr,
-    pub count: u32,
-}
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct EmptyExtension {}
-
-pub const STATE: Item<State> = Item::new("state");
-pub const TICKET_STATUS: Map<u32, TicketInfo> = Map::new("ticket_status");
+pub const GLOBAL_STATE: Item<GlobalState> = Item::new("global_state");
+pub const GAME_STATE: Map<u64, GameState> = Map::new("game_state");
+pub const TICKET_STATUS: Map<(u64, u64), Addr> = Map::new("ticket_status");
+pub const WALLET_TICKETS: Map<(u64, Addr), Vec<u64>> = Map::new("wallet_tickets");
